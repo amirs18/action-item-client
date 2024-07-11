@@ -1,4 +1,8 @@
-export interface User {
+export interface UserResults {
+  results?: UserAPI[] | null;
+  info: Info;
+}
+export interface UserAPI {
   gender: string;
   name: Name;
   location: Location;
@@ -53,10 +57,16 @@ export interface DobOrRegistered {
 }
 export interface Id {
   name: string;
-  value: string;
+  value?: string | null;
 }
 export interface Picture {
   large: string;
   medium: string;
   thumbnail: string;
+}
+export interface Info {
+  seed: string;
+  results: number;
+  page: number;
+  version: string;
 }
