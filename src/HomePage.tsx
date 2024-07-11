@@ -5,10 +5,10 @@ export function HomePage() {
     <>
       <h1>HomePage</h1>
       <Link to="/fetch">
-        <button>fetch</button>
+        <button className="btn">fetch</button>
       </Link>
       <Link to="/history">
-        <button>history</button>
+        <button className="btn">history</button>
       </Link>
     </>
   );

@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserAPI, UserResults } from "../userTypes";
+import axios from "axios";
 
 const BACKEND_URL = "http://localhost:4000";
 
@@ -7,17 +8,17 @@ function useUsersAPi() {
   return useQuery({
     queryKey: ["usersAPI"],
     queryFn: async (): Promise<UserResults> => {
-      const response = await fetch("https://randomuser.me/api/?results=10");
-      return await response.json();
+      const response = await axios.get("https://randomuser.me/api/?results=10");
+      return response.data;
     },
   });
 }
 function useUsersBE() {
   return useQuery({
     queryKey: ["usersBE"],
-    queryFn: async (): Promise<UserResults> => {
-      const response = await fetch(`${BACKEND_URL}/user`);
-      return await response.json();
+    queryFn: async (): Promise<UserAPI[]> => {
+      const response = await axios.get(`${BACKEND_URL}/user`);
+      return response.data;
     },
   });
 }
@@ -32,7 +33,7 @@ export function Users({
 
   return (
     <div>
-      <h1>Posts</h1>
+      <h1>Users</h1>
       <div>
         {status === "pending" ? (
           "Loading..."
@@ -42,24 +43,20 @@ export function Users({
           <>
             <div>
               {data.results?.map((user) => (
-                <p key={user.email}>
-                  <a
-                    onClick={() => setUser(user)}
-                    href="#"
-                    style={
-                      // We can access the query data here to show bold links for
-                      // ones that are cached
-                      queryClient.getQueryData(["user", user.email])
-                        ? {
-                            fontWeight: "bold",
-                            color: "green",
-                          }
-                        : {}
-                    }
-                  >
-                    {user.name.first}
-                  </a>
-                </p>
+                <div className="flex flex-row" key={user.email}>
+                  <div className="avatar">
+                    <div className="w-10 rounded-full">
+                      <img src={user.picture.thumbnail} />
+                    </div>
+                  </div>
+                  <button className="ml-4" onClick={() => setUser(user)}>
+                    {`${user.name.title}, ${user.name.first} ${user.name.last}`}
+                  </button>
+                  <p className="ml-4">{user.gender}</p>
+                  <p className="ml-4">{user.location.country}</p>
+                  <p className="ml-4">{user.phone}</p>
+                  <p className="ml-4">{user.email}</p>
+                </div>
               ))}
             </div>
             <div>{isFetching ? "Background Updating..." : " "}</div>
@@ -88,7 +85,7 @@ export function UsersHistory({
         ) : (
           <>
             <div>
-              {data.results?.map((user) => (
+              {data.map((user) => (
                 <p key={user.email}>
                   <a
                     onClick={() => setUser(user)}
@@ -118,8 +115,8 @@ export function UsersHistory({
 }
 
 const getPostById = async (email: string): Promise<UserAPI> => {
-  const response = await fetch(`${BACKEND_URL}/user/${email}`);
-  return await response.json();
+  const response = await axios.get(`${BACKEND_URL}/user/${email}`);
+  return response.data();
 };
 
 function useUser(user: UserAPI) {
@@ -138,15 +135,14 @@ export function User({
   user: UserAPI;
   setUser: React.Dispatch<React.SetStateAction<UserAPI | null>>;
 }) {
-  const { status } = useUser(user);
-  console.log("🚀 ~ status:", status, user);
+  useUser(user);
 
   return (
     <div>
       <div>
-        <a onClick={() => setUser(null)} href="#">
+        <button className="btn" onClick={() => setUser(null)}>
           Back
-        </a>
+        </button>
       </div>
       {user && (
         <>
@@ -155,11 +151,23 @@ export function User({
             <p>{user.gender}</p>
           </div>
           <button
+            className="btn"
             onClick={() => {
-              fetch(`${BACKEND_URL}/user`, { body: JSON.stringify(user) });
+              axios.post(`${BACKEND_URL}/user`, {
+                body: user,
+              });
             }}
           >
             save
+          </button>
+          <button
+            className="btn"
+            onClick={() => {
+              axios.delete(`${BACKEND_URL}/user/${user.email}`);
+              setUser(null);
+            }}
+          >
+            delete
           </button>
         </>
       )}
