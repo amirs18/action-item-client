@@ -1,6 +1,8 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { UserAPI, UserResults } from "../userTypes";
 import axios from "axios";
+import UserRows from "./UserRows";
+import UserHistoryRows from "./UserHistoryRows";
 
 const BACKEND_URL = "http://localhost:4000";
 
@@ -28,90 +30,18 @@ export function Users({
 }: {
   setUser: React.Dispatch<React.SetStateAction<UserAPI | null>>;
 }) {
-  const queryClient = useQueryClient();
-  const { status, data, error, isFetching } = useUsersAPi();
+  const reactQueryUser = useUsersAPi();
 
-  return (
-    <div>
-      <h1>Users</h1>
-      <div>
-        {status === "pending" ? (
-          "Loading..."
-        ) : status === "error" ? (
-          <span>Error: {error.message}</span>
-        ) : (
-          <>
-            <div>
-              {data.results?.map((user) => (
-                <div className="flex flex-row" key={user.email}>
-                  <div className="avatar">
-                    <div className="w-10 rounded-full">
-                      <img src={user.picture.thumbnail} />
-                    </div>
-                  </div>
-                  <button className="ml-4" onClick={() => setUser(user)}>
-                    {`${user.name.title}, ${user.name.first} ${user.name.last}`}
-                  </button>
-                  <p className="ml-4">{user.gender}</p>
-                  <p className="ml-4">{user.location.country}</p>
-                  <p className="ml-4">{user.phone}</p>
-                  <p className="ml-4">{user.email}</p>
-                </div>
-              ))}
-            </div>
-            <div>{isFetching ? "Background Updating..." : " "}</div>
-          </>
-        )}
-      </div>
-    </div>
-  );
+  return <UserRows reactQueryUser={reactQueryUser} setUser={setUser} />;
 }
 export function UsersHistory({
   setUser,
 }: {
   setUser: React.Dispatch<React.SetStateAction<UserAPI | null>>;
 }) {
-  const queryClient = useQueryClient();
-  const { status, data, error, isFetching } = useUsersBE();
+  const reactQueryUser = useUsersBE();
 
-  return (
-    <div>
-      <h1>Users</h1>
-      <div>
-        {status === "pending" ? (
-          "Loading..."
-        ) : status === "error" ? (
-          <span>Error: {error.message}</span>
-        ) : (
-          <>
-            <div>
-              {data.map((user) => (
-                <p key={user.email}>
-                  <a
-                    onClick={() => setUser(user)}
-                    href="#"
-                    style={
-                      // We can access the query data here to show bold links for
-                      // ones that are cached
-                      queryClient.getQueryData(["user", user.email])
-                        ? {
-                            fontWeight: "bold",
-                            color: "green",
-                          }
-                        : {}
-                    }
-                  >
-                    {user.name.first}
-                  </a>
-                </p>
-              ))}
-            </div>
-            <div>{isFetching ? "Background Updating..." : " "}</div>
-          </>
-        )}
-      </div>
-    </div>
-  );
+  return <UserHistoryRows reactQueryUser={reactQueryUser} setUser={setUser} />;
 }
 
 const getPostById = async (email: string): Promise<UserAPI> => {
